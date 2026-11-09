@@ -1,0 +1,28 @@
+-- Crownfield Eye Hospital Database
+-- 04_mirela_security.sql
+-- TASK: DATA PROTECTION USING HASHING
+-- MySQL 8.0 syntax; run against a test copy of the group database.
+
+USE CrownfieldEyeHospital;
+
+-- 1. Add a column for storing password hashes.
+-- Run this ALTER TABLE only once, if PasswordHash does not already exist.
+ALTER TABLE Patient
+ADD COLUMN PasswordHash VARCHAR(255);
+
+-- 2. Assign demonstration hashes to fictional patient records.
+-- Replace the example IDs with IDs that exist in your test database.
+-- SHA2 here illustrates hashing; real passwords require a salted,
+-- slow password hashing algorithm such as Argon2id or bcrypt.
+UPDATE Patient
+SET PasswordHash = SHA2('Patient123!', 256)
+WHERE PatientID = 'P001';
+
+UPDATE Patient
+SET PasswordHash = SHA2('Patient456!', 256)
+WHERE PatientID = 'P002';
+
+-- 3. Verify the hashes without exposing the original passwords.
+SELECT PatientID, PasswordHash
+FROM Patient
+WHERE PatientID IN ('P001', 'P002');

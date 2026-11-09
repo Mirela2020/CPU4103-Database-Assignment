@@ -1,0 +1,96 @@
+-- CPU4103 - Introduction to Database
+-- Crownfield Eye Hospital
+-- Individual SQL queries - Sections 6.1 to 6.6
+--
+-- Compiled from the six tasks and screenshots in my individual report.
+-- Run the SELECT queries against the correct hospital database and tables.
+-- The original screenshots for procedures/triggers used a simplified
+-- Appointment table; check the columns before running those sections.
+-- Section 6.2's final JOIN statement was not visible in the screenshots,
+-- so the query below is assembled from the stated task and shown columns.
+
+USE CrownfieldEyeHospital;
+
+-- ================================================================
+-- 6.1 GROUP BY and HAVING
+-- Question: Which clinicians have more than two appointments?
+-- ================================================================
+SELECT clinician_id, COUNT(*) AS total_appointments
+FROM Appointment
+GROUP BY clinician_id
+HAVING COUNT(*) > 2;
+
+-- ================================================================
+-- 6.2 INNER JOIN across three tables
+-- Question: Combine the Patient, Appointment and Clinician tables.
+-- ================================================================
+SELECT p.patient_id,
+       p.patient_name,
+       a.appointment_id,
+       c.clinician_id,
+       c.clinician_name
+FROM Patient AS p
+INNER JOIN Appointment AS a
+    ON p.patient_id = a.patient_id
+INNER JOIN Clinician AS c
+    ON a.clinician_id = c.clinician_id;
+
+-- ================================================================
+-- 6.3 LEFT JOIN
+-- Question: Show all patients, including those without appointments.
+-- ================================================================
+SELECT Patient.patient_id,
+       Patient.patient_name,
+       Appointment.appointment_id
+FROM Patient
+LEFT JOIN Appointment
+    ON Patient.patient_id = Appointment.patient_id;
+
+-- ================================================================
+-- 6.4 Subquery
+-- Question: Which patients have at least one appointment?
+-- ================================================================
+SELECT patient_id, patient_name
+FROM Patient
+WHERE patient_id IN (
+    SELECT patient_id
+    FROM Appointment
+);
+
+-- ================================================================
+-- 6.5 Stored procedure
+-- Question: Retrieve appointments using a specific patient ID.
+-- Note: Tested in the report against a simple Appointment table.
+-- ================================================================
+DROP PROCEDURE IF EXISTS GetPatientAppointment;
+DELIMITER $$
+CREATE PROCEDURE GetPatientAppointment(IN p_patient_id INT)
+BEGIN
+    SELECT appointment_id, patient_id
+    FROM Appointment
+    WHERE patient_id = p_patient_id;
+END$$
+DELIMITER ;
+
+-- Example call from the report:
+CALL GetPatientAppointment(1);
+
+-- ================================================================
+-- 6.6 Trigger
+-- Question: Set the status of each new appointment to 'Scheduled'.
+-- Note: This needs a status column in Appointment and was tested on
+--       a simplified example table, as shown in my report.
+-- ================================================================
+DROP TRIGGER IF EXISTS SetAppointmentStatus;
+DELIMITER $$
+CREATE TRIGGER SetAppointmentStatus
+BEFORE INSERT ON Appointment
+FOR EACH ROW
+BEGIN
+    SET NEW.status = 'Scheduled';
+END$$
+DELIMITER ;
+
+-- In the report's separate test, a new appointment was inserted and
+-- SELECT * FROM Appointment showed status = 'Scheduled'.
+-- Do not repeat that INSERT here without checking the table and IDs.

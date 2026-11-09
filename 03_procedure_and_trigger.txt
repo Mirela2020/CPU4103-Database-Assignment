@@ -1,0 +1,50 @@
+-- Crownfield Eye Hospital Database
+-- 03_procedure_and_trigger.sql
+-- Stored Procedure and Trigger (individual work)
+-- Based on Sections 6.5 and 6.6 of the individual report.
+-- IMPORTANT: The report tested these on a simplified Appointment table.
+-- Check that your actual Appointment table has the columns below before running.
+
+USE CrownfieldEyeHospital;
+
+-- ============================================================
+-- TASK 1: STORED PROCEDURE
+-- Retrieve appointments for a specified patient ID.
+-- ============================================================
+
+DROP PROCEDURE IF EXISTS GetPatientAppointment;
+
+DELIMITER $$
+CREATE PROCEDURE GetPatientAppointment(IN p_patient_id INT)
+BEGIN
+    SELECT appointment_id, patient_id
+    FROM Appointment
+    WHERE patient_id = p_patient_id;
+END$$
+DELIMITER ;
+
+-- Test using an existing patient ID (1 was used in the report):
+CALL GetPatientAppointment(1);
+
+-- ============================================================
+-- TASK 2: TRIGGER
+-- Automatically set a new appointment's status to 'Scheduled'.
+-- Requires an Appointment.status column (as in the report's test).
+-- ============================================================
+
+DROP TRIGGER IF EXISTS SetAppointmentStatus;
+
+DELIMITER $$
+CREATE TRIGGER SetAppointmentStatus
+BEFORE INSERT ON Appointment
+FOR EACH ROW
+BEGIN
+    SET NEW.status = 'Scheduled';
+END$$
+DELIMITER ;
+
+-- The report tested the trigger by inserting an appointment without
+-- specifying status, then checking that status was 'Scheduled'.
+-- Use a new valid appointment ID and existing related IDs when testing
+-- against the complete hospital schema; do not copy a test INSERT
+-- blindly because the full schema may require additional columns.
